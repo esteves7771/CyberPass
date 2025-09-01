@@ -5,7 +5,7 @@
 NEON//PASS is a **fully client-side**, cyberpunk-themed password generator built for both desktop and mobile.  
 It combines **futuristic visuals**, **secure random generation**, and **customizable controls** — all in one immersive hacker-style interface.
 
-![screenshot](screenshot.png) <!-- optional: replace with actual screenshot -->
+![screenshot](https://github.com/esteves7771/CyberPass/blob/main/Screenshot%202025-09-01%20at%2023.34.18.png)
 
 ---
 
@@ -69,7 +69,7 @@ It combines **futuristic visuals**, **secure random generation**, and **customiz
 
 | Desktop | Mobile Portrait |
 |---------|-----------------|
-| ![Desktop](desktop.png) | ![Mobile](mobile.png) |
+| ![Desktop](https://github.com/esteves7771/CyberPass/blob/main/Screenshot%202025-09-01%20at%2023.34.18.png) | *(Mobile screenshot coming soon)* |
 
 ---
 
