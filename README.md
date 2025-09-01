@@ -1,6 +1,6 @@
-# NEON//PASS - Cyberpunk Password Generator
+# NEON//PASS — Cyberpunk Password Generator (ChatGpt assited code)
 
-**Live Demo:** *(https://esteves7771.github.io/CyberPass/)*
+**Live Demo:** *(optional: add your GitHub Pages or hosting link here)*
 
 NEON//PASS is a **fully client-side**, cyberpunk-themed password generator built for both desktop and mobile.  
 It combines **futuristic visuals**, **secure random generation**, and **customizable controls** — all in one immersive hacker-style interface.
@@ -46,6 +46,17 @@ It combines **futuristic visuals**, **secure random generation**, and **customiz
 
 ---
 
+## 🚀 How to Use
+
+1. **Download** the repository or the `index.html` file.
+2. Open `index.html` in any modern browser.
+3. Adjust the settings and click **Generate**.
+4. Copy or wipe as needed.
+
+*(Optional)* You can host it on GitHub Pages for instant access anywhere.
+
+---
+
 ## 🛠 Tech Stack
 
 - **HTML5**, **CSS3**, **JavaScript (ES6+)**
@@ -56,9 +67,16 @@ It combines **futuristic visuals**, **secure random generation**, and **customiz
 
 ## 📸 Screenshots
 
-| Desktop | Mobile Portrait |
-|---------|-----------------|
-| ![Desktop](https://github.com/esteves7771/CyberPass/blob/main/Screenshot%202025-09-01%20at%2023.34.18.png) | *(Mobile screenshot coming soon)* |
+| Desktop | Mobile Portrait 1 | Mobile Portrait 2 |
+|---------|-------------------|-------------------|
+| ![Desktop](https://github.com/esteves7771/CyberPass/blob/main/Screenshot%202025-09-01%20at%2023.34.18.png) | ![Mobile 1](https://github.com/esteves7771/CyberPass/blob/main/IMG_6948.png) | ![Mobile 2](https://github.com/esteves7771/CyberPass/blob/main/IMG_6949.png) |
+
+---
+
+## ⚠️ Rights
+
+All rights reserved.  
+Unauthorized copying, distribution, or modification of this software, via any medium, is strictly prohibited without prior written permission from the author.
 
 ---
 
