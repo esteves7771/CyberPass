@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NEON//PASS v0.1 — Cyberpunk Password Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0a0b10;           /* deep noir */
+      --grid:#0e1220;         /* panel outline */
+      --neon:#00ff9f;         /* primary neon */
+      --neon2:#00cfff;        /* cyan accent */
+      --mag:#ff00ff;          /* magenta accent */
+      --warn:#ffbe0b;         /* yellow */
+      --danger:#ff3864;       /* red */
+      --text:#d9ffe9;         /* light mint */
+      --muted:#7acfb1;        /* mid mint */
+      --shadow:0 8px 30px rgba(0,255,159,.18), inset 0 0 18px rgba(0,255,159,.14);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:radial-gradient(1200px 700px at 70% -10%, rgba(0,207,255,.08), transparent 60%),
+      radial-gradient(900px 500px at 10% 110%, rgba(255,0,255,.05), transparent 60%), var(--bg);
+      color:var(--text); font-family:"Share Tech Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      letter-spacing:.25px; overflow:hidden; display:flex; justify-content:center;
+    }
+    /* MATRIX RAIN */
+    #matrix{position:fixed; inset:0; z-index:0; opacity:.25;}
+    /* SCANLINES */
+    .scanlines:before{content:""; position:fixed; inset:0; pointer-events:none; background:repeating-linear-gradient(0deg, rgba(255,255,255,.04) 0, rgba(255,255,255,.04) 1px, transparent 2px, transparent 3px); mix-blend-mode:overlay; opacity:.18; z-index:1}
+
+    /* LAYOUT */
+    .wrap{position:relative; z-index:2; height:100%; display:grid; grid-template-rows:auto 1fr auto; width:100%;}
+    header{padding:16px 20px; display:flex; align-items:center; gap:16px; border-bottom:1px solid #132033; background:linear-gradient(180deg, #0b0f1a 0, #0a0b10 100%);} 
+    .brand{display:flex; align-items:center; gap:12px}
+    .badge{padding:2px 8px; border:1px solid var(--neon2); color:var(--neon2); border-radius:999px; font-size:12px; text-shadow:0 0 8px rgba(0,207,255,.6)}
+    .title{font-size:18px; color:var(--neon); text-shadow:0 0 12px rgba(0,255,159,.8)}
+
+    main{display:grid; grid-template-columns: 420px 1fr; gap:18px; padding:18px; height:calc(100vh - 120px);} 
+    @media (max-width: 980px){ main{grid-template-columns:1fr; height:auto; overflow:auto} body{overflow:auto}}
+
+    .panel{background:linear-gradient(180deg, #0b0f1a 0%, #0a0b10 100%); border:1px solid #132033; border-radius:14px; box-shadow:var(--shadow); position:relative; overflow:hidden}
+    .panel:before{content:""; position:absolute; inset:0; background:linear-gradient(45deg, rgba(0,255,159,.08), transparent 30%, transparent 70%, rgba(0,207,255,.06)); pointer-events:none}
+    .panel h2{margin:0; padding:14px 16px; border-bottom:1px solid #132033; color:var(--muted); letter-spacing:1px; font-size:14px; text-transform:uppercase}
+    .panel .content{padding:16px;}
+
+    .row{display:grid; grid-template-columns: 1fr auto; align-items:center; gap:10px; margin:10px 0}
+    .stack{display:grid; gap:10px}
+    .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+    .grid-3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px}
+
+    label{font-size:13px; color:var(--muted)}
+
+    input[type="range"]{width:100%}
+    input[type="checkbox"]{accent-color:var(--neon)}
+
+    .switch{display:flex; align-items:center; gap:8px}
+    .switch input{scale:1.2}
+
+    .btn{cursor:pointer; border:1px solid var(--neon); color:var(--bg); background:linear-gradient(180deg, var(--neon) 0%, #7affd0 100%); font-weight:700; padding:10px 14px; border-radius:10px; text-shadow:none; box-shadow:0 4px 18px rgba(0,255,159,.25); transition:transform .08s ease, box-shadow .2s ease}
+    .btn:hover{transform:translateY(-1px); box-shadow:0 6px 24px rgba(0,255,159,.32)}
+    .btn.secondary{border-color:var(--neon2); background:linear-gradient(180deg, var(--neon2) 0%, #7fe6ff 100%)}
+    .btn.warn{border-color:var(--danger); background:linear-gradient(180deg, var(--danger) 0%, #ff6f92 100%)}
+
+    .terminal{font-size:14px; line-height:1.5; color:var(--text); background:transparent; min-height:160px; padding:16px;}
+    .log{color:#7dd9ff}
+    .ok{color:#8affc7}
+    .prompt{color:var(--mag)}
+
+    .output{display:grid; gap:10px}
+    .glass{background:rgba(0,255,159,.08); border:1px dashed rgba(0,255,159,.35); color:var(--text); padding:14px; border-radius:12px}
+    .mono{font-family:inherit; font-size:20px; word-break:break-all}
+
+    .muted{opacity:.75}
+
+    .meter{height:10px; border-radius:999px; background:#0f1c2a; border:1px solid #132033; overflow:hidden; position:relative}
+    .meter > span{display:block; height:100%; width:0%; background:linear-gradient(90deg, #ff3864, #ffbe0b, #00ff9f); filter:saturate(1.2); transition:width .3s ease}
+    .meter-label{font-size:12px; color:var(--muted)}
+
+    .kpi{display:flex; gap:8px; align-items:center; font-size:12px; color:var(--muted)}
+    .kpi .dot{width:8px; height:8px; border-radius:999px; background:var(--neon); box-shadow:0 0 8px rgba(0,255,159,.8)}
+
+    footer{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 16px; border-top:1px solid #132033; background:#0b0f1a}
+    .tiny{font-size:12px; color:var(--muted)}
+
+    /* ===== Mobile Portrait Optimizations (no changes to desktop) ===== */
+    @media (max-width: 720px) and (orientation: portrait), (pointer: coarse) and (max-width: 900px) {
+      html, body { height:auto; }
+      body { overflow:auto; }
+      main { grid-template-columns: 1fr; height:auto; padding:12px; gap:12px; }
+      header { position:sticky; top:0; z-index:5; }
+
+      /* Panels stack and breathe */
+      .panel { border-radius:12px; }
+      .panel h2 { font-size:13px; padding:12px 14px; }
+      .panel .content { padding:12px; }
+
+      /* Controls: single column */
+      .grid-2 { grid-template-columns: 1fr; }
+      .grid-3 { grid-template-columns: 1fr; }
+      .row { grid-template-columns: 1fr; gap:6px; margin:8px 0; }
+
+      /* Bigger touch targets */
+      label { font-size:15px; }
+      .switch input { scale:1.35; }
+      input[type="range"] { height:32px; }
+      input[type="text"], input[type="number"], #sep { height:38px; padding:8px 10px; border-radius:8px; border:1px solid #1a2b44; background:rgba(0,255,159,.06); color:var(--text); }
+
+      /* Buttons full width */
+      .btn { width:100%; padding:12px 16px; font-size:16px; border-radius:12px; }
+
+      /* Output readability */
+      .mono { font-size:18px; word-break:break-word; }
+      .meter-label { font-size:11px; }
+
+      /* Lighter background animation for perf */
+      #matrix { opacity:.15; }
+    }
+
+    /* glitch flicker */
+    .flicker { animation: flicker 2s infinite; }
+    @keyframes flicker { 0%,19%,21%,23%,25%,54%,56%,100%{opacity:1} 20%,24%,55%{opacity:.8} 22%{opacity:.6} }
+  </style>
+</head>
+<body class="scanlines">
+  <canvas id="matrix"></canvas>
+  <div class="wrap" role="application">
+    <header>
+      <div class="brand">
+        <span class="badge">PWA-READY</span>
+        <div class="title">NEON//PASS <span class="muted">v0.1</span></div>
+      </div>
+      <div style="margin-left:auto" class="kpi"><span class="dot"></span><span>Client-side RNG: <b>crypto.getRandomValues()</b></span></div>
+    </header>
+
+    <main>
+      <!-- Controls Panel -->
+      <section class="panel" aria-label="Controls">
+        <h2>Generator Controls</h2>
+        <div class="content stack">
+          <div class="row">
+            <label for="length">Length: <b id="lengthVal">16</b></label>
+            <input id="length" type="range" min="8" max="64" value="16" />
+          </div>
+
+          <div class="grid-2">
+            <div class="stack">
+              <div class="switch"><input id="lower" type="checkbox" checked><label for="lower">Lowercase (a–z)</label></div>
+              <div class="switch"><input id="upper" type="checkbox" checked><label for="upper">Uppercase (A–Z)</label></div>
+              <div class="switch"><input id="nums" type="checkbox" checked><label for="nums">Numbers (0–9)</label></div>
+              <div class="switch"><input id="syms" type="checkbox" checked><label for="syms">Symbols (!@#…)</label></div>
+              <div class="switch"><input id="exclude" type="checkbox"><label for="exclude">Exclude similar (0/O, 1/l/I)</label></div>
+              <div class="switch"><input id="glitch" type="checkbox"><label for="glitch">Glitch mode (▞◢≡ glyphs)</label></div>
+            </div>
+            <div class="stack">
+              <div class="switch"><input id="passphrase" type="checkbox"><label for="passphrase">Passphrase mode (3–5 words)</label></div>
+              <div class="row"><label for="words">Word count <span id="wordsVal" class="muted">4</span></label><input id="words" type="range" min="3" max="7" value="4"></div>
+              <div class="row"><label for="sep">Separator</label><input id="sep" value="-" aria-label="Separator"/></div>
+              <div class="row"><label for="capsWord">Capitalize Words</label><input id="capsWord" type="checkbox" checked/></div>
+            </div>
+          </div>
+
+          <div class="grid-3">
+            <button id="generate" class="btn" aria-label="Generate password">▶ generate</button>
+            <button id="copy" class="btn secondary" aria-label="Copy to clipboard">⛁ copy</button>
+            <button id="wipe" class="btn warn" aria-label="Wipe from memory">✖ wipe</button>
+          </div>
+
+          <div class="stack output" aria-live="polite">
+            <div class="glass mono" id="output">—</div>
+            <div class="kpi"><span class="dot"></span><span id="entropyText">Entropy: 0 bits</span></div>
+            <div class="meter" aria-hidden="true"><span id="meterBar"></span></div>
+            <div class="meter-label">Weak ▸▸ Medium ▸▸ Strong</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Terminal Panel -->
+      <section class="panel" aria-label="Terminal">
+        <h2>Hacker Terminal</h2>
+        <div class="terminal" id="terminal" aria-live="polite">
+          <div class="log">[BOOT] NEO-SECURITY TERMINAL initializing…</div>
+          <div class="log">Loading encryption modules… <span class="ok">OK</span></div>
+          <div class="log">Establishing neural uplink… <span class="ok">OK</span></div>
+          <div class="log">Entropy calibrators online… <span class="ok">OK</span></div>
+          <div class="prompt">&gt; ready. type <b>generate</b> or click the button.</div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="tiny">All generation is <b>local</b>. No network calls. Use a proper password manager.</div>
+      <div class="tiny">© 20XX NEON//PASS • cyberpunk demo</div>
+    </footer>
+  </div>
+
+  <script>
+    // ===== Matrix Rain Background =====
+    (function matrixRain(){
+      const canvas = document.getElementById('matrix');
+      const ctx = canvas.getContext('2d');
+      const isMobile = matchMedia('(pointer: coarse)').matches || window.innerWidth < 720;
+      const cell = isMobile ? 18 : 14; // larger cells on mobile = fewer columns
+      const charSize = isMobile ? 16 : 14;
+
+      function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; cols = Math.floor(canvas.width / cell); drops = Array(cols).fill(0); }
+      let cols=0; let drops=[]; resize();
+      addEventListener('resize', resize);
+      const chars = 'ネオンパス01≡◢◣◤◥▞▚';
+      function rand(max){ return crypto.getRandomValues(new Uint32Array(1))[0] % max }
+
+      // On mobile, throttle frames slightly for battery
+      let frame = 0;
+      function draw(){
+        frame++;
+        if(isMobile && frame % 2 === 0){ requestAnimationFrame(draw); return; }
+        ctx.fillStyle = 'rgba(10,11,16,0.15)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = '#00ff9f'; ctx.font = charSize + 'px "Share Tech Mono"';
+        for(let i=0; i<drops.length; i++){
+          const text = chars[rand(chars.length)];
+          ctx.fillText(text, i*cell, drops[i]*cell);
+          if(drops[i]*cell > canvas.height && rand(100) > 94){ drops[i] = 0 } else { drops[i]++ }
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    })();
+
+    // ===== Utilities =====
+    const $ = sel => document.querySelector(sel);
+    const log = (msg, cls='log') => {
+      const line = document.createElement('div'); line.className = cls; line.innerHTML = msg; $('#terminal').appendChild(line); $('#terminal').scrollTop = $('#terminal').scrollHeight; }
+
+    function getRandomInt(max){
+      if(max <= 0) return 0;
+      const arr = new Uint32Array(1); crypto.getRandomValues(arr); return arr[0] % max;
+    }
+
+    function shuffle(arr){
+      for(let i = arr.length - 1; i > 0; i--){
+        const j = getRandomInt(i + 1); [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // ===== Character Sets =====
+    const LOWER = 'abcdefghijklmnopqrstuvwxyz';
+    const UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const NUMS  = '0123456789';
+    const SYMS  = "!@#$%^&*()_+-=[]{}|;:'\",.<>/?`~";
+    const GLYPHS= '◢◣◥◤▞▚░▒▓█≡∆∴';
+
+    const SIMILAR_RE = /[O0Il1]/g; // used if exclude similar
+
+    // ===== Passphrase Wordlist (mini cyberpunk) =====
+    const WORDS = [
+      'neon','ion','circuit','matrix','ghost','runner','blade','net','core','flux','drift','void','quantum','chrome','synth',
+      'vertex','cipher','daemon','vector','glitch','signal','pulse','vapor','drone','omega','nexus','echo','plasma','holo',
+      'alpha','gamma','delta','omega','axion','nano','pilot','zenith','orbit','nova','ember','halo','pixel','turbo','datastream',
+      'hydra','katana','specter','nyx','zephyr','raven','onyx','vortex','cipher','lambda','proto','agent','stride','titan'
+    ];
+
+    // ===== DOM Elements =====
+    const els = {
+      length: $('#length'), lengthVal: $('#lengthVal'),
+      lower: $('#lower'), upper: $('#upper'), nums: $('#nums'), syms: $('#syms'),
+      glitch: $('#glitch'), exclude: $('#exclude'),
+      passphrase: $('#passphrase'), words: $('#words'), wordsVal: $('#wordsVal'), sep: $('#sep'), capsWord: $('#capsWord'),
+      out: $('#output'), gen: $('#generate'), copy: $('#copy'), wipe: $('#wipe'),
+      entropyText: $('#entropyText'), meterBar: $('#meterBar')
+    };
+
+    // sync labels
+    els.length.addEventListener('input', ()=> els.lengthVal.textContent = els.length.value);
+    els.words.addEventListener('input', ()=> els.wordsVal.textContent = els.words.value);
+
+    function computeEntropy(chars, len){
+      const pool = Math.max(chars.length, 1);
+      const bits = Math.round(len * Math.log2(pool));
+      return { bits, pool };
+    }
+
+    function updateMeter(bits){
+      // simple scale: 0-64 weak, 65-96 medium, >96 strong
+      let pct = Math.min(100, Math.round(bits/128*100));
+      els.meterBar.style.width = pct + '%';
+      let label = 'Entropy: ' + bits + ' bits (' + (bits>96?'strong': bits>64 ? 'medium' : 'weak') + ')';
+      els.entropyText.textContent = label;
+    }
+
+    function buildCharset(){
+      let chars = '';
+      if(els.lower.checked) chars += LOWER;
+      if(els.upper.checked) chars += UPPER;
+      if(els.nums.checked)  chars += NUMS;
+      if(els.syms.checked)  chars += SYMS;
+      if(els.glitch.checked) chars += GLYPHS;
+      if(els.exclude.checked) chars = chars.replace(SIMILAR_RE, '');
+      return chars;
+    }
+
+    function ensureAtLeastOneFromEach(groups){
+      // pick one char from each group (if enabled) and fill the rest randomly from the full set
+      const enabledGroups = groups.filter(g => g.enabled && g.set.length);
+      const picks = [];
+      enabledGroups.forEach(g=>{ picks.push(g.set[getRandomInt(g.set.length)]) });
+      return picks;
+    }
+
+    function generatePassword(){
+      const len = Number(els.length.value);
+      // Passphrase mode
+      if(els.passphrase.checked){
+        const count = Number(els.words.value);
+        const sep = els.sep.value || '-';
+        const words = [];
+        for(let i=0; i<count; i++){
+          let w = WORDS[getRandomInt(WORDS.length)];
+          if(els.capsWord.checked) w = w.charAt(0).toUpperCase()+w.slice(1);
+          words.push(w);
+        }
+        const pass = words.join(sep);
+        els.out.textContent = pass;
+        const {bits, pool} = computeEntropy(WORDS.join(''), pass.length); // rough estimate
+        updateMeter(bits);
+        log(`> generate --mode passphrase --words ${count} --sep "${sep}"`, 'prompt');
+        log(`[OK] generated passphrase (${pass.length} chars, pool≈${WORDS.length})`, 'ok');
+        return pass;
+      }
+
+      // Character mode
+      const groups = [
+        { enabled: els.lower.checked, set: els.exclude.checked ? LOWER.replace(SIMILAR_RE,'') : LOWER },
+        { enabled: els.upper.checked, set: els.exclude.checked ? UPPER.replace(SIMILAR_RE,'') : UPPER },
+        { enabled: els.nums.checked,  set: els.exclude.checked ? NUMS.replace(SIMILAR_RE,'')  : NUMS },
+        { enabled: els.syms.checked,  set: SYMS },
+        { enabled: els.glitch.checked, set: GLYPHS }
+      ];
+
+      let charset = buildCharset();
+      if(!charset.length){
+        els.out.textContent = 'Select at least one character set!';
+        updateMeter(0); return '';
+      }
+
+      const picks = ensureAtLeastOneFromEach(groups);
+      const needed = Math.max(0, len - picks.length);
+      for(let i=0; i<needed; i++){
+        picks.push(charset[getRandomInt(charset.length)]);
+      }
+      shuffle(picks);
+      const pass = picks.join('');
+      els.out.textContent = pass;
+      const {bits, pool} = computeEntropy(charset, len);
+      updateMeter(bits);
+      log(`> generate --len ${len} --sets ${[els.lower.checked?'l':'',els.upper.checked?'u':'',els.nums.checked?'n':'',els.syms.checked?'s':'',els.glitch.checked?'g':''].join('')}`, 'prompt');
+      log(`[OK] generated (${len} chars, pool=${pool})`, 'ok');
+      return pass;
+    }
+
+    function copyToClipboard(){
+      const val = els.out.textContent.trim();
+      if(!val || val==='—') { log('[WARN] nothing to copy', 'log'); return }
+      navigator.clipboard.writeText(val).then(()=>{
+        log('[OK] copied to clipboard: [PASS UPLOADED TO CLOUD]', 'ok');
+        $('#output').classList.add('flicker'); setTimeout(()=>$('#output').classList.remove('flicker'), 600);
+      }).catch(()=> log('[ERR] clipboard denied', 'log'))
+    }
+
+    function wipe(){ els.out.textContent='—'; updateMeter(0); log('> wipe --mem all', 'prompt'); log('[OK] cleared from view (remember: clipboard persists until overwritten).', 'ok'); }
+
+    // Wire up
+    els.gen.addEventListener('click', generatePassword);
+    els.copy.addEventListener('click', copyToClipboard);
+    els.wipe.addEventListener('click', wipe);
+
+    // keyboard shortcut: Enter to generate, Ctrl/Cmd+C to copy
+    document.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter') generatePassword();
+      if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='c') copyToClipboard();
+    });
+
+    // init entropy
+    updateMeter(0);
+  </script>
+</body>
+</html>
